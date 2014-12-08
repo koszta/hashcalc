@@ -54,7 +54,8 @@ The response is a JSON object with the following structure:
 - The program should be written in Javascript.
 - The program should run with any 0.10.* of Node.js.
 - You can only use libraries that are listed on the API page of Node.js (http://nodejs.org/api/). Don't use external code and don't use any NPM packages.
-- Although you can expect large amounts of data (hundreds of MB's) to be sent in some requests, but the program should keep it's memory usage limited to something in the order of megabytes.
+- The program needs to be able to handle arbitrarily sized request bodies (think gigabytes and even bigger!).
+- The program's memory usage should be limited to somewhere in the order of megabytes.
 - The statistics do *not* have to be persistent between program executions.
 
 ## Deliverables
