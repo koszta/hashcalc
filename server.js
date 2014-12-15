@@ -33,6 +33,14 @@ module.exports = http.createServer(function(req, res) {
         }));
       });
       break;
+    case '/hashcalc':
+      ensureAllowed(req, res, ['POST'], function() {
+        res.writeHead(200, {'content-type': 'application/json'});
+        res.end(JSON.stringify({
+          host: req.headers['host'],
+        }));
+      });
+      break;
     default:
       notFound(res);
       break;

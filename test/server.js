@@ -48,6 +48,36 @@ describe('server', function() {
     });
   });
 
+  describe('POST /hashcalc', function() {
+    it('should return 200', function(done) {
+      request
+        .post('/hashcalc')
+        .expect(200)
+        .end(done);
+    });
+
+    it('should set content-type to application/json', function(done) {
+      request
+        .post('/hashcalc')
+        .expect('Content-Type', 'application/json')
+        .end(done);
+    });
+
+    describe('.host', function() {
+      it('should be the same as in the host header', function(done) {
+        request
+          .post('/hashcalc')
+          .set('host', 'somehost.com')
+          .end(function(err, res) {
+            if (err) throw err;
+
+            res.body.host.should.equal('somehost.com');
+            done();
+          });
+      });
+    });
+  });
+
   describe('POST /stats', function() {
     it('should return 405', function(done) {
       request
@@ -74,6 +104,36 @@ describe('server', function() {
       request
         .post('/stats')
         .expect({status: 'method_not_allowed', allow: ['GET']})
+        .end(done);
+    });
+  });
+
+  describe('GET /hashcalc', function() {
+    it('should return 405', function(done) {
+      request
+        .get('/hashcalc')
+        .expect(405)
+        .end(done);
+    });
+
+    it('should set content-type to application/json', function(done) {
+      request
+        .get('/hashcalc')
+        .expect('Content-Type', 'application/json')
+        .end(done);
+    });
+
+    it('should set allow to POST', function(done) {
+      request
+        .get('/hashcalc')
+        .expect('Allow', 'POST')
+        .end(done);
+    });
+
+    it('should send {"status": "method_not_allowed", "allow": ["POST"]}', function(done) {
+      request
+        .get('/hashcalc')
+        .expect({status: 'method_not_allowed', allow: ['POST']})
         .end(done);
     });
   });
