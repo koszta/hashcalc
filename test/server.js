@@ -18,5 +18,33 @@ describe('server', function() {
         .expect('Content-Type', 'application/json')
         .end(done);
     });
+
+    describe('.host', function() {
+      it('should be the same as in the host header', function(done) {
+        request
+          .get('/stats')
+          .set('host', 'somehost.com')
+          .end(function(err, res) {
+            if (err) throw err;
+
+            res.body.host.should.equal('somehost.com');
+            done();
+          });
+      });
+    });
+
+    describe('.stats', function() {
+      it('should be an object', function(done) {
+        request
+          .get('/stats')
+          .set('host', 'somehost.com')
+          .end(function(err, res) {
+            if (err) throw err;
+
+            res.body.stats.should.be.an('object');
+            done();
+          });
+      });
+    });
   });
 });
