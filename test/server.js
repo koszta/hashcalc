@@ -47,4 +47,27 @@ describe('server', function() {
       });
     });
   });
+
+  describe('GET /wrong_path', function() {
+    it('should return 404', function(done) {
+      request
+        .get('/wrong_path')
+        .expect(404)
+        .end(done);
+    });
+
+    it('should set content-type to application/json', function(done) {
+      request
+        .get('/wrong_path')
+        .expect('Content-Type', 'application/json')
+        .end(done);
+    });
+
+    it('should send {"status": "not_found"}', function(done) {
+      request
+        .get('/wrong_path')
+        .expect({status: 'not_found'})
+        .end(done);
+    });
+  });
 });
