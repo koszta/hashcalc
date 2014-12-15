@@ -76,6 +76,33 @@ describe('server', function() {
           });
       });
     });
+
+    describe('.hash', function() {
+      it('should be d41d8cd98f00b204e9800998ecf8427e without sending data', function(done) {
+        request
+          .post('/hashcalc')
+          .set('host', 'somehost.com')
+          .end(function(err, res) {
+            if (err) throw err;
+
+            res.body.hash.should.equal('d41d8cd98f00b204e9800998ecf8427e');
+            done();
+          });
+      });
+
+      it('should be 098f6bcd4621d373cade4e832627b4f6 for test', function(done) {
+        request
+          .post('/hashcalc')
+          .send('test')
+          .set('host', 'somehost.com')
+          .end(function(err, res) {
+            if (err) throw err;
+
+            res.body.hash.should.equal('098f6bcd4621d373cade4e832627b4f6');
+            done();
+          });
+      });
+    });
   });
 
   describe('POST /stats', function() {

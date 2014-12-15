@@ -1,5 +1,6 @@
 var http = require('http'),
-    url = require('url');
+    url = require('url'),
+    crypto = require('crypto');
 
 notFound = function (res) {
   res.writeHead(404, {'content-type': 'application/json'});
@@ -35,10 +36,21 @@ module.exports = http.createServer(function(req, res) {
       break;
     case '/hashcalc':
       ensureAllowed(req, res, ['POST'], function() {
-        res.writeHead(200, {'content-type': 'application/json'});
-        res.end(JSON.stringify({
-          host: req.headers['host'],
-        }));
+        var hash = crypto.createHash('md5');
+
+        req.on('data', function(data) {
+          hash.update(data);
+        });
+
+        req.on('end', function() {
+          var digest = hash.digest('hex');
+
+          res.writeHead(200, {'content-type': 'application/json'});
+          res.end(JSON.stringify({
+            host: req.headers['host'],
+            hash: digest,
+          }));
+        });
       });
       break;
     default:
