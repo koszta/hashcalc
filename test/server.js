@@ -103,6 +103,52 @@ describe('server', function() {
           });
       });
     });
+
+    describe('.time', function() {
+      it('should be the time spent with hashing', function(done) {
+        request
+          .post('/hashcalc')
+          .set('host', 'somehost.com')
+          .end(function(err, res) {
+            if (err) throw err;
+
+            res.body.time.should.be.above(0);
+            res.body.time.should.be.below(0.2);
+            done();
+          });
+      });
+    });
+
+    describe('.size', function() {
+      context('empty body', function() {
+        it('should be 0', function(done) {
+          request
+            .post('/hashcalc')
+            .set('host', 'somehost.com')
+            .end(function(err, res) {
+              if (err) throw err;
+
+              res.body.size.should.be.equal(0);
+              done();
+            });
+        });
+      });
+
+      context('test sent as body', function() {
+        it('should be 4', function(done) {
+          request
+            .post('/hashcalc')
+            .send('test')
+            .set('host', 'somehost.com')
+            .end(function(err, res) {
+              if (err) throw err;
+
+              res.body.size.should.be.equal(4);
+              done();
+            });
+        });
+      });
+    });
   });
 
   describe('POST /stats', function() {

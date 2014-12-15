@@ -24,6 +24,7 @@ ensureAllowed = function(req, res, allowedMethods, callback) {
 }
 
 module.exports = http.createServer(function(req, res) {
+  var start = process.hrtime();
   switch(url.parse(req.url).path) {
     case '/stats':
       ensureAllowed(req, res, ['GET'], function() {
@@ -36,19 +37,25 @@ module.exports = http.createServer(function(req, res) {
       break;
     case '/hashcalc':
       ensureAllowed(req, res, ['POST'], function() {
-        var hash = crypto.createHash('md5');
+        var hash = crypto.createHash('md5'),
+            size = 0;
 
         req.on('data', function(data) {
+          size += data.length;
           hash.update(data);
         });
 
         req.on('end', function() {
-          var digest = hash.digest('hex');
+          var digest = hash.digest('hex'),
+              end = process.hrtime(start),
+              time = end[0] * 1000 + end[1] / 1000000;
 
           res.writeHead(200, {'content-type': 'application/json'});
           res.end(JSON.stringify({
             host: req.headers['host'],
             hash: digest,
+            time: time,
+            size: size
           }));
         });
       });
