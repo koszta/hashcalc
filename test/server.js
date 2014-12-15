@@ -48,6 +48,36 @@ describe('server', function() {
     });
   });
 
+  describe('POST /stats', function() {
+    it('should return 405', function(done) {
+      request
+        .post('/stats')
+        .expect(405)
+        .end(done);
+    });
+
+    it('should set content-type to application/json', function(done) {
+      request
+        .post('/stats')
+        .expect('Content-Type', 'application/json')
+        .end(done);
+    });
+
+    it('should set allow to GET', function(done) {
+      request
+        .post('/stats')
+        .expect('Allow', 'GET')
+        .end(done);
+    });
+
+    it('should send {"status": "method_not_allowed", "allow": ["GET"]}', function(done) {
+      request
+        .post('/stats')
+        .expect({status: 'method_not_allowed', allow: ['GET']})
+        .end(done);
+    });
+  });
+
   describe('GET /wrong_path', function() {
     it('should return 404', function(done) {
       request
