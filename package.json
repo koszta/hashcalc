@@ -1,0 +1,19 @@
+{
+  "name": "nodejs-assignment",
+  "version": "0.0.1",
+  "description": "Interview assignment",
+  "author": "Peter Pal Koszta <pp.koszta@gmail.com>",
+  "devDependencies": {
+    "chai": "1.9.x",
+    "mocha": "1.21.x",
+    "supertest": "0.15.x"
+  },
+  "engines": {
+    "node": "0.10.x",
+    "npm": "2.1.x"
+  },
+  "scripts": {
+    "start": "node server",
+    "test": "node_modules/mocha/bin/mocha -R spec test"
+  }
+}
