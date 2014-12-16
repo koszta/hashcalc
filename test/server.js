@@ -1,5 +1,6 @@
 var server = require('../server'),
-    request = require('supertest')(server);
+    request = require('supertest')(server),
+    http = require('http');
 
 require('chai').should();
 
@@ -44,6 +45,213 @@ describe('server', function() {
             res.body.stats.should.be.an('object');
             done();
           });
+      });
+
+      describe('.active', function() {
+        context('no active hashing', function() {
+          it('should be 0', function(done) {
+            request
+              .get('/stats')
+              .end(function(err, res) {
+                if (err) throw err;
+
+                res.body.stats.active.should.equal(0);
+                done();
+              });
+          });
+        });
+
+        context('active hashing', function() {
+          var req;
+
+          beforeEach(function(done) {
+            req = http.request({
+              hostname: '127.0.0.1',
+              port: 3000,
+              path: '/hashcalc',
+              method: 'POST'
+            });
+            req.write('test');
+            setTimeout(done, 10);
+          });
+
+          afterEach(function() {
+            req.end();
+          });
+
+          it('should return the number of active hashing', function(done) {
+            request
+              .get('/stats')
+              .end(function(err, res) {
+                if (err) throw err;
+
+                res.body.stats.active.should.equal(1);
+                done();
+              });
+          });
+        });
+
+        context('active hashing on different host', function() {
+          var req;
+
+          beforeEach(function(done) {
+            req = http.request({
+              hostname: '127.0.0.1',
+              port: 3000,
+              path: '/hashcalc',
+              method: 'POST'
+            });
+            req.write('test');
+            setTimeout(done, 10);
+          });
+
+          afterEach(function() {
+            req.end();
+          });
+
+          it('should be 0', function(done) {
+            request
+              .get('/stats')
+              .set('host', 'other-host.com')
+              .end(function(err, res) {
+                if (err) throw err;
+
+                res.body.stats.active.should.equal(0);
+                done();
+              });
+          });
+        });
+      });
+
+      describe('.max_payload', function() {
+        context('no hashing done on the host yet', function() {
+          it('should be 0', function(done) {
+            request
+              .get('/stats')
+              .set('host', 'no-hash.com')
+              .end(function(err, res) {
+                if (err) throw err;
+
+                res.body.stats.max_payload.should.equal(0);
+                done();
+              });
+          });
+        });
+
+        context('hashed a few bytes', function() {
+          beforeEach(function(done) {
+            request
+              .post('/hashcalc')
+              .set('host', 'hashed4bytes.com')
+              .send('test')
+              .end(done);
+          });
+
+          it('should be the number of bytes sent', function(done) {
+            request
+              .get('/stats')
+              .set('host', 'hashed4bytes.com')
+              .end(function(err, res) {
+                if (err) throw err;
+
+                res.body.stats.max_payload.should.equal(4);
+                done();
+              });
+          });
+        });
+      });
+
+      describe('.average_payload', function() {
+        context('no hashing done on the host yet', function() {
+          it('should be 0', function(done) {
+            request
+              .get('/stats')
+              .set('host', 'no-hash.com')
+              .end(function(err, res) {
+                if (err) throw err;
+
+                res.body.stats.average_payload.should.equal(0);
+                done();
+              });
+          });
+        });
+
+        context('hashed a few bytes', function() {
+          beforeEach(function(done) {
+            request
+              .post('/hashcalc')
+              .set('host', 'average-payload.com')
+              .send('test')
+              .end(done);
+          });
+
+          beforeEach(function(done) {
+            request
+              .post('/hashcalc')
+              .set('host', 'average-payload.com')
+              .send('test')
+              .end(done);
+          });
+
+          it('should be the number of bytes sent', function(done) {
+            request
+              .get('/stats')
+              .set('host', 'average-payload.com')
+              .end(function(err, res) {
+                if (err) throw err;
+
+                res.body.stats.average_payload.should.equal(4);
+                done();
+              });
+          });
+        });
+      });
+
+      describe('.average_time_per_mb', function() {
+        context('no hashing done on the host yet', function() {
+          it('should be 0', function(done) {
+            request
+              .get('/stats')
+              .set('host', 'no-hash.com')
+              .end(function(err, res) {
+                if (err) throw err;
+
+                res.body.stats.average_time_per_mb.should.equal(0);
+                done();
+              });
+          });
+        });
+
+        context('hashed a few bytes', function() {
+          beforeEach(function(done) {
+            request
+              .post('/hashcalc')
+              .set('host', 'average-time-per-mb.com')
+              .send('test')
+              .end(done);
+          });
+
+          beforeEach(function(done) {
+            request
+              .post('/hashcalc')
+              .set('host', 'average-time-per-mb.com')
+              .send('test')
+              .end(done);
+          });
+
+          it('should be the number of bytes sent', function(done) {
+            request
+              .get('/stats')
+              .set('host', 'average-time-per-mb.com')
+              .end(function(err, res) {
+                if (err) throw err;
+
+                res.body.stats.average_time_per_mb.should.be.above(10000);
+                res.body.stats.average_time_per_mb.should.be.below(100000);
+                done();
+              });
+          });
+        });
       });
     });
   });

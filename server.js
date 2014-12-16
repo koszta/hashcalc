@@ -1,6 +1,7 @@
 var http = require('http'),
     url = require('url'),
-    crypto = require('crypto');
+    crypto = require('crypto')
+    stats = {};
 
 notFound = function (res) {
   res.writeHead(404, {'content-type': 'application/json'});
@@ -25,13 +26,27 @@ ensureAllowed = function(req, res, allowedMethods, callback) {
 
 module.exports = http.createServer(function(req, res) {
   var start = process.hrtime();
+      host = req.headers['host'],
+      hostStats = stats[host] = stats[host] || {
+        active: 0,
+        maxSize: 0,
+        sumSize: 0,
+        count: 0,
+        sumTime: 0
+      };
+
   switch(url.parse(req.url).path) {
     case '/stats':
       ensureAllowed(req, res, ['GET'], function() {
         res.writeHead(200, {'content-type': 'application/json'});
         res.end(JSON.stringify({
-          host: req.headers['host'],
-          stats: {}
+          host: host,
+          stats: {
+            active: hostStats.active,
+            max_payload: hostStats.maxSize,
+            average_payload: hostStats.count > 0 ? hostStats.sumSize / hostStats.count : 0,
+            average_time_per_mb: hostStats.sumSize > 0 ? hostStats.sumTime / (hostStats.sumSize / 1048576) : 0
+          }
         }));
       });
       break;
@@ -40,6 +55,7 @@ module.exports = http.createServer(function(req, res) {
         var hash = crypto.createHash('md5'),
             size = 0;
 
+        hostStats.active++;
         req.on('data', function(data) {
           size += data.length;
           hash.update(data);
@@ -57,6 +73,11 @@ module.exports = http.createServer(function(req, res) {
             time: time,
             size: size
           }));
+          hostStats.active--;
+          hostStats.maxSize = hostStats.maxSize < size ? size : hostStats.maxSize;
+          hostStats.sumSize += size;
+          hostStats.count++;
+          hostStats.sumTime += time;
         });
       });
       break;
