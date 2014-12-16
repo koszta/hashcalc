@@ -321,7 +321,7 @@ describe('server', function() {
             if (err) throw err;
 
             res.body.time.should.be.above(0);
-            res.body.time.should.be.below(0.2);
+            res.body.time.should.be.below(1);
             done();
           });
       });
